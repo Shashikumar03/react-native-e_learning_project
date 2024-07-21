@@ -4,8 +4,11 @@ import { StyleSheet } from 'react-native-web'
 import {Colors} from "../../constants/Colors"
 import { collection, query, getDocs } from 'firebase/firestore';
 import { db } from "../../configs/FirebaseConfig"
+import CategoryItem from './CategoryItem';
+import { useRouter } from 'expo-router';
 
 export default function Category() {
+    const router=useRouter()
     // useState
     const [categoryList, setCategoryList] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -43,11 +46,8 @@ export default function Category() {
         keyExtractor={(item) => item.id}
         horizontal={true}
         renderItem={({ item }) => (
-         <TouchableOpacity onPress={()=>alert(item.name)}>
-            <View style={[styles.itemContainer,styles.boxShodow]}>
-                <Image source={{ uri: item.imageUrl }} style={[styles.image]} />
-                <Text style={{textAlign:"center",fontSize:16, fontWeight:'bold',padding:5}}>{item.name}</Text>
-            </View>
+         <TouchableOpacity onPress={()=>router.push('/bussinesslist/'+item.name)}>
+            <CategoryItem category={item}/>
          </TouchableOpacity>
         )}
       />}

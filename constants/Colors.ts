@@ -26,5 +26,6 @@ export const Colors = {
   },
   WHITE:"#fff",
   PRIMARY:"#7f57f1",
-  USERCOLOR:"#8ec7ed"
+  USERCOLOR:"#8ec7ed",
+  GRAY:"#808080"
 };
