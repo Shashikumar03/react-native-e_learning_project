@@ -55,7 +55,7 @@ export default function LoginScreen() {
         <Text style={[styles.shikha]}>WELCOME To SHIK.SHA</Text>
         <Text style={styles.courseText}>this is a ultimate course</Text>
         </View>
-        <TouchableOpacity style={[styles.loginWithGoogle]} onPress={googleSignUp}>
+        <TouchableOpacity style={[styles.loginWithGoogle]} onPress={onPress} >
             <Image source={google}/>
             <Text style={styles.loginWithGoogleText}>Login with Google</Text>
         </TouchableOpacity>
