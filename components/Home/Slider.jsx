@@ -32,6 +32,7 @@ export default function Slider() {
 
   return (
     <View style={styles.main}>
+      <Text style={{fontSize:16,fontWeight:"bold",padding:5,paddingLeft:10, }}>#Famous Personalities</Text>
       {loading?<View style={[styles.loadingDiv]}><ActivityIndicator  style={styles.loadingContainer} size="large" color="#0000ff" /></View>:
       <FlatList
         data={sliderList}

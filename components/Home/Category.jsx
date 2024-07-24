@@ -39,18 +39,18 @@ export default function Category() {
          <Text style={{fontSize:18,fontWeight:'bold',color:Colors.PRIMARY}}>Category</Text>
          <Text style={{fontSize:15,fontWeight:'bold', color:Colors.PRIMARY}}>view all</Text>
        </View>
-       <View style={styles.main}>
-      {loading?<View style={[styles.loadingDiv]}><ActivityIndicator  style={styles.loadingContainer} size="large" color="#0000ff" /></View>:
-      <FlatList
-        data={categoryList}
-        keyExtractor={(item) => item.id}
-        horizontal={true}
-        renderItem={({ item }) => (
-         <TouchableOpacity onPress={()=>router.push('/bussinesslist/'+item.name)}>
-            <CategoryItem category={item}/>
-         </TouchableOpacity>
-        )}
-      />}
+      <View style={styles.main}>
+        {loading?<View style={[styles.loadingDiv]}><ActivityIndicator  style={styles.loadingContainer} size="large" color="#0000ff" /></View>:
+        <FlatList
+          data={categoryList}
+          keyExtractor={(item) => item.id}
+          horizontal={true}
+          renderItem={({ item }) => (
+          <TouchableOpacity onPress={()=>router.push('/bussinesslist/'+item.name)}>
+              <CategoryItem category={item}/>
+          </TouchableOpacity>
+          )}
+        />}
     </View>
     </View>
   )

@@ -12,6 +12,7 @@ export default function Header() {
   return (
     <View style={[styles.headerContainer, styles.borderApply]}>
       {/* <Text>Header</Text> */}
+      
       <View style={[styles.userInfoContainer, styles.borderApply]}>
           <Image style={styles.imageStyle} source={{uri:user?.imageUrl}}/>
           <View style={[styles.userInfoText]}>
