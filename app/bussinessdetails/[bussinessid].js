@@ -1,13 +1,16 @@
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import { Text, View, Image, StyleSheet } from "react-native";
+import { Text, View, Image, StyleSheet,ActivityIndicator } from "react-native";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from "../../configs/FirebaseConfig";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { SafeAreaView } from 'react-native-safe-area-context';
+// import { SafeAreaView } from "react-native-web";
 
 export default function BusinessDetails() {
     const { bussinessid } = useLocalSearchParams();
     const navigation = useNavigation();
     const [businessDetails, setBusinessDetails] = useState(null);
+    const [statusBarHeight, setStatusBarHeight] = useState(0);
 
     useEffect(() => {
         getBusinessDetailsById();
@@ -29,11 +32,13 @@ export default function BusinessDetails() {
     };
 
     if (!businessDetails) {
-        return <Text>Loading...</Text>;
+        return  <View style={styles.loadingDiv}>
+        <ActivityIndicator style={styles.loadingContainer} size="large" color="#0000ff" />
+      </View>
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={[styles.container, styles.borderApply,{marginTop:statusBarHeight}]}>
             <Image source={{ uri: businessDetails.imageUrl }} style={styles.image} />
             <Text style={styles.name}>{businessDetails.name}</Text>
             <Text style={styles.category}>{businessDetails.category}</Text>
@@ -41,7 +46,7 @@ export default function BusinessDetails() {
             <Text style={styles.address}>Address: {businessDetails.address}</Text>
             <Text style={styles.mobile}>Mobile: {businessDetails.mobile}</Text>
             <Text style={styles.website}>Website: {businessDetails.website}</Text>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -50,6 +55,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         backgroundColor: '#f5f5f5',
+        
     },
     image: {
         width: 128,
@@ -82,4 +88,19 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'blue',
     },
+    loadingDiv: {  
+        marginTop: 100,
+      },
+      loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      borderApply:{
+        borderRadius: 10,
+        borderWidth: 2, // 2px border width
+        borderColor: 'green', // border color
+        // backgroundColor:""
+        // width:"80%"
+      },
 });
