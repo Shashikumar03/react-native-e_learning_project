@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import { Text, View, Image, StyleSheet,ActivityIndicator } from "react-native";
+import { Text, View, Image, StyleSheet,ActivityIndicator, ScrollView } from "react-native";
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from "../../configs/FirebaseConfig";
 import { useEffect, useLayoutEffect, useState } from "react";
@@ -7,6 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // import { SafeAreaView } from "react-native-web";
 import { Ionicons } from '@expo/vector-icons';
 import Intro from "../../components/BussinessDetails/Intro";
+import ActionButton from "../../components/BussinessDetails/ActionButton";
+import About from "../../components/BussinessDetails/About";
+import Reviews from "../../components/BussinessDetails/Reviews";
 // import Intro from "../../components/BussinessDetails/Intro";
 
 export default function BusinessDetails() {
@@ -25,7 +28,7 @@ export default function BusinessDetails() {
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                setBusinessDetails(docSnap.data());
+                setBusinessDetails({id:docSnap.id,...docSnap.data()});
             } else {
                 console.log("No such document!");
             }
@@ -41,9 +44,12 @@ export default function BusinessDetails() {
     }
 
     return (
-        <View>
-            <Intro bussiness={businessDetails}/>
-        </View>
+        <ScrollView>
+                <Intro bussiness={businessDetails}/>
+                <ActionButton bussiness={businessDetails}/>
+                <About bussiness={businessDetails}/>
+                <Reviews bussiness={businessDetails}/>
+        </ScrollView>
     );
 }
 
