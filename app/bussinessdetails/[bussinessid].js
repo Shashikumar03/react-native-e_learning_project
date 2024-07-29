@@ -5,6 +5,9 @@ import { db } from "../../configs/FirebaseConfig";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { SafeAreaView } from 'react-native-safe-area-context';
 // import { SafeAreaView } from "react-native-web";
+import { Ionicons } from '@expo/vector-icons';
+import Intro from "../../components/BussinessDetails/Intro";
+// import Intro from "../../components/BussinessDetails/Intro";
 
 export default function BusinessDetails() {
     const { bussinessid } = useLocalSearchParams();
@@ -38,15 +41,9 @@ export default function BusinessDetails() {
     }
 
     return (
-        <SafeAreaView style={[styles.container, styles.borderApply,{marginTop:statusBarHeight}]}>
-            <Image source={{ uri: businessDetails.imageUrl }} style={styles.image} />
-            <Text style={styles.name}>{businessDetails.name}</Text>
-            <Text style={styles.category}>{businessDetails.category}</Text>
-            <Text style={styles.about}>{businessDetails.about}</Text>
-            <Text style={styles.address}>Address: {businessDetails.address}</Text>
-            <Text style={styles.mobile}>Mobile: {businessDetails.mobile}</Text>
-            <Text style={styles.website}>Website: {businessDetails.website}</Text>
-        </SafeAreaView>
+        <View>
+            <Intro bussiness={businessDetails}/>
+        </View>
     );
 }
 
@@ -58,9 +55,10 @@ const styles = StyleSheet.create({
         
     },
     image: {
-        width: 128,
-        height: 128,
-        marginBottom: 20,
+        width: "80%",
+        height: 300,
+        marginBottom: 10,
+        resizeMode:''
     },
     name: {
         fontSize: 24,
