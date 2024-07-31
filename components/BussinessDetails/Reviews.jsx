@@ -18,6 +18,10 @@ export default function Reviews({ bussiness }) {
         }
 
         try {
+            const currentDate = new Date();
+            const formattedDate = currentDate.toLocaleDateString();
+            const formattedTime = currentDate.toLocaleTimeString();
+
             const docRef = doc(db, 'Bussiness', bussiness?.id);
             await updateDoc(docRef, {
                 reviews: arrayUnion({
@@ -26,6 +30,8 @@ export default function Reviews({ bussiness }) {
                     userName: user?.fullName,
                     userImage: user?.imageUrl,
                     userEmail: user?.primaryEmailAddress?.emailAddress,
+                    date: formattedDate,
+                    time: formattedTime,
                 })
             });
             ToastAndroid.show('Review submitted successfully!', ToastAndroid.SHORT, ToastAndroid.BOTTOM);
@@ -41,46 +47,33 @@ export default function Reviews({ bussiness }) {
             <View>
                 {
                     bussiness?.reviews.map((item, index) => (
-                        <View style={{
-                            display:"flex",
-                            flexDirection:"row",
-                            gap:4,
-                            borderColor:Colors.GRAY,
-                            borderWidth:0.5,
-                            marginTop:6,
-                            borderRadius:10,
-                            padding:10,
-                            // justifyContent:"center",
-                            alignItems:"center"
-                        }}>
+                        <View key={index} style={styles.reviewContainer}>
                             <View>
                                 <Image source={{ uri: item.userImage }}
-                                    style={{
-                                        width: 50,
-                                        height: 50,
-                                        borderRadius: 20
-                                    }}
+                                    style={styles.userImage}
                                 />
                             </View>
-                            <View>
-                                <Text>{item.userName}</Text>
+                            <View style={styles.reviewTextContainer}>
+                                <Text style={styles.userName}>{item?.userName}</Text>
                                 <Rating
                                     imageSize={15}
-                                    ratingCount={item.rating}
+                                    readonly
+                                    startingValue={item?.rating}
+                                    style={{alignSelf:"flex-start"}}
                                 />
-                                <Text>{item.rating}</Text>
-                                <Text>{item.comment}</Text>
+                                <Text>{item?.comment}</Text>
+                                <Text style={styles.timestamp}>{item?.date} at {item?.time}</Text>
                             </View>
-
                         </View>
                     ))
                 }
             </View>
             <View>
-
                 <AirbnbRating
                     onFinishRating={setRating}
                     size={25}
+                    
+                    
                 />
                 <TextInput
                     placeholder='Write your comment'
@@ -114,6 +107,33 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
         marginBottom: 10
+    },
+    reviewContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 4,
+        borderColor: Colors.GRAY,
+        borderWidth: 0.5,
+        marginTop: 6,
+        borderRadius: 10,
+        padding: 10,
+    },
+    userImage: {
+        width: 50,
+        height: 50,
+        borderRadius: 20,
+        marginTop: 5
+    },
+    reviewTextContainer: {
+        marginLeft: 10
+    },
+    userName: {
+        fontWeight: 'bold'
+    },
+    timestamp: {
+        fontSize: 10,
+        color: Colors.GRAY,
+        marginTop: 5
     },
     textInput: {
         borderWidth: 1,

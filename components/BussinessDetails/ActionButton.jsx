@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image,TouchableOpacity, Linking } from 'react-native'
+import { View, Text, FlatList, Image,TouchableOpacity, Linking, Share } from 'react-native'
 import React from 'react'
 import { Colors } from '../../constants/Colors'
 
@@ -21,7 +21,7 @@ export default function ActionButton({bussiness}) {
       {
         id:3,
         name:"Share",
-        url:"https://www.google.com/maps/place/Raxaul,+Bihar/@27.0035848,84.8223014,16.24z/data=!4m6!3m5!1s0x3993515252feb2fb:0x98334e294cd62157!8m2!3d26.9797677!4d84.8515804!16zL20vMGYyOF81?entry=ttu",
+        url:"kk",
         icon:require("../../assets/images/share.png")
       },
       {
@@ -35,7 +35,9 @@ export default function ActionButton({bussiness}) {
     const onPressHandle=(item)=>{
         console.log(item.url)
       if(item.name=='Share'){
-        return ;
+        Share.share({
+          message:bussiness?.name +"\n Address:"+bussiness?.address+"\n powered by S&T PVT LIMITED"
+        })
       }
       Linking.openURL(item.url)
     }
@@ -60,7 +62,7 @@ export default function ActionButton({bussiness}) {
                 textAlign:'center'
               }} >{item.name}
               </Text>
-              
+
 
               
           </TouchableOpacity>

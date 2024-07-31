@@ -5,10 +5,12 @@ import { Colors } from "../../constants/Colors"
 import { collection, query, getDocs } from 'firebase/firestore';
 import { db } from "../../configs/FirebaseConfig"
 import PopularBussinessCard from './PopularBussinessCard';
+import { useRouter } from 'expo-router';
 
 export default function PopularBussiness() {
     const [bussinessList, setBussinessList] = useState([]);
     const [loading, setLoading] = useState(true);
+    const router=useRouter()
 
     useEffect(() => {
         getCategoryList();
@@ -45,7 +47,7 @@ export default function PopularBussiness() {
                             keyExtractor={(item) => item.id}
                             horizontal={true}
                             renderItem={({ item }) => (
-                                <TouchableOpacity onPress={() => alert(item.name)}>
+                                <TouchableOpacity onPress={() => router.push("/bussinessdetails/"+item.id)}>
                                     <PopularBussinessCard bussinessDetails={item} />
                                 </TouchableOpacity>
                             )}

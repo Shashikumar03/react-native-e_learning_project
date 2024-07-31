@@ -28,7 +28,7 @@ export default function Slider() {
     }
   };
   
-  console.log(loading)
+  // console.log(loading)
 
   return (
     <View style={styles.main}>
