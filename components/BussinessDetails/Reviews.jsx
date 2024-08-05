@@ -1,5 +1,5 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ToastAndroid, Image } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ToastAndroid, Image, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { Colors } from '../../constants/Colors';
 import { AirbnbRating, Rating } from 'react-native-ratings';
 import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
@@ -9,7 +9,14 @@ import { useUser } from '@clerk/clerk-expo';
 export default function Reviews({ bussiness }) {
     const [rating, setRating] = useState(5);
     const [userInput, setUserInput] = useState('');
+    const [reviews, setReviews] = useState([]);
     const { user } = useUser();
+
+    useEffect(() => {
+        if (bussiness?.reviews) {
+            setReviews(bussiness.reviews);
+        }
+    }, [bussiness]);
 
     const handleSubmit = async () => {
         if (!bussiness || !bussiness.id) {
@@ -22,19 +29,23 @@ export default function Reviews({ bussiness }) {
             const formattedDate = currentDate.toLocaleDateString();
             const formattedTime = currentDate.toLocaleTimeString();
 
+            const newReview = {
+                rating: rating,
+                comment: userInput,
+                userName: user?.fullName,
+                userImage: user?.imageUrl,
+                userEmail: user?.primaryEmailAddress?.emailAddress,
+                date: formattedDate,
+                time: formattedTime,
+            };
+
             const docRef = doc(db, 'Bussiness', bussiness?.id);
             await updateDoc(docRef, {
-                reviews: arrayUnion({
-                    rating: rating,
-                    comment: userInput,
-                    userName: user?.fullName,
-                    userImage: user?.imageUrl,
-                    userEmail: user?.primaryEmailAddress?.emailAddress,
-                    date: formattedDate,
-                    time: formattedTime,
-                })
+                reviews: arrayUnion(newReview)
             });
+
             ToastAndroid.show('Review submitted successfully!', ToastAndroid.SHORT, ToastAndroid.BOTTOM);
+            setReviews((prevReviews) => [...prevReviews, newReview]);
             setUserInput(''); // Clear input field after submission
         } catch (error) {
             console.error("Error updating document:", error);
@@ -44,37 +55,30 @@ export default function Reviews({ bussiness }) {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Reviews</Text>
-            <View>
-                {
-                    bussiness?.reviews?.map((item, index) => (
-                        <View key={index} style={styles.reviewContainer}>
-                            <View>
-                                <Image source={{ uri: item.userImage }}
-                                    style={styles.userImage}
-                                />
-                            </View>
-                            <View style={styles.reviewTextContainer}>
-                                <Text style={styles.userName}>{item?.userName}</Text>
-                                <Rating
-                                    imageSize={15}
-                                    readonly
-                                    startingValue={item?.rating}
-                                    style={{alignSelf:"flex-start"}}
-                                />
-                                <Text>{item?.comment}</Text>
-                                <Text style={styles.timestamp}>{item?.date} at {item?.time}</Text>
-                            </View>
+            <FlatList
+                data={reviews}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                    <View style={styles.reviewContainer}>
+                        <View>
+                            <Image source={{ uri: item.userImage }} style={styles.userImage} />
                         </View>
-                    ))
-                }
-            </View>
+                        <View style={styles.reviewTextContainer}>
+                            <Text style={styles.userName}>{item?.userName}</Text>
+                            <Rating
+                                imageSize={15}
+                                readonly
+                                startingValue={item?.rating}
+                                style={{ alignSelf: "flex-start" }}
+                            />
+                            <Text>{item?.comment}</Text>
+                            <Text style={styles.timestamp}>{item?.date} at {item?.time}</Text>
+                        </View>
+                    </View>
+                )}
+            />
             <View>
-                <AirbnbRating
-                    onFinishRating={setRating}
-                    size={25}
-                    
-                    
-                />
+                <AirbnbRating onFinishRating={setRating} size={25} />
                 <TextInput
                     placeholder='Write your comment'
                     numberOfLines={4}
