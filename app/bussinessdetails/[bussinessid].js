@@ -36,7 +36,7 @@ export default function BusinessDetails() {
             console.error("Error fetching document:", error);
         }
     };
-
+ console.log(businessDetails)
     if (!businessDetails) {
         return  <View style={styles.loadingDiv}>
         <ActivityIndicator style={styles.loadingContainer} size="large" color="#0000ff" />

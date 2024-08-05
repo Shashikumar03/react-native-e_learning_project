@@ -1,17 +1,21 @@
-import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet, KeyboardAvoidingView ,Platform} from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { useNavigation } from 'expo-router'
+import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet, KeyboardAvoidingView, Platform, ToastAndroid } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useNavigation } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../constants/Colors';
 import RNPickerSelect from 'react-native-picker-select';
-import { collection, query, getDocs, where } from 'firebase/firestore';
+import { collection, query, getDocs, setDoc, doc } from 'firebase/firestore';
 import { db, storage } from "../../configs/FirebaseConfig";
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { useUser } from '@clerk/clerk-expo';
 
 export default function AddBussiness() {
     const navigation = useNavigation();
-    const [image, setImage] = useState(null)
-    const [categoryList, setCategoryList] = useState([])
+    const [image, setImage] = useState(null);
+    const [categoryList, setCategoryList] = useState([]);
+    const [category, setCategory] = useState();
+    const { user } = useUser();
+
     const [formData, setFormData] = useState({
         name: '',
         address: '',
@@ -19,26 +23,22 @@ export default function AddBussiness() {
         website: '',
         about: '',
     });
+
     const handleInputChange = (field, value) => {
         setFormData({
             ...formData,
             [field]: value
         });
-        // if (errors[field]) {
-        //     setErrors({
-        //       ...errors,
-        //       [field]: ''
-        //     });
-        //   }
-    }
+    };
 
     useEffect(() => {
         navigation.setOptions({
             headerTitle: "Add New Items",
             headerShown: true
-        })
-        getCategoryList()
-    }, [])
+        });
+        getCategoryList();
+    }, []);
+
     const onImagePick = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -46,9 +46,9 @@ export default function AddBussiness() {
             aspect: [4, 3],
             quality: 1,
         });
-        setImage(result?.assets[0].uri)
-        // console.log(result)
-    }
+        setImage(result?.assets[0]?.uri);
+    };
+
     const getCategoryList = async () => {
         try {
             const q = query(collection(db, 'Category'));
@@ -59,243 +59,177 @@ export default function AddBussiness() {
                 value: doc.data().name,
                 ...doc.data()
             }));
-            setCategoryList(data)
-            // setBussinessList(data);
-            // setLoading(false);
-            // console.log(data)
+            setCategoryList(data);
         } catch (error) {
             console.error("Error fetching slider data: ", error);
         }
-    }
-    const handleSubmit = () => {
-        // if (validateForm()) {
-        // const submittedData = JSON.stringify(formData, null, 2);
-        // alert('Form Submitted', submittedData);
-        // //   setResponse(submittedData);
-        // setFormData({
-        //     name: '',
-        //     address: '',
-        //     contact: '',
-        //     website: '',
-        //     about: '',
-        // });
-        // }
-        onAddNewBusiness()
-        
     };
-    // const onAddNewBussiness= async()=>{
-    //     console.log("submitting")
-    //     const fileName= Date.now().toString()+".jpg";
-    //     const resp= await fetch(image);
-    //     const blob= await resp.blob();
-    //     const imageRef= ref(storage,"gs://react-native-project-429517.appspot.com/"+fileName)
-    //     console.log(imageRef)
-    //     uploadBytes(imageRef,blob).then((snapshot)=>{
-    //         console.log("file uploaded successfully")
-    //     })
-    // }
-    const onAddNewBusiness = async () => {
-        console.log("Submitting");
-        const fileName = Date.now().toString() + ".jpg";
-        const response = await fetch(image);
-        const blob = await response.blob();
-        // console.log(blob)
-        
-        const imageRef = ref(storage, `/bussiness-app/${fileName}`);
-        // console.log(imageRef)
-        
-        uploadBytes(imageRef, blob).then((snapshot) => {
-            console.log("File uploaded successfully");
-        }).then((result) => {
-            getDownloadURL(imageRef).then(async(downloadUrl)=>{
-                console.log(downloadUrl)
-            })
-            
-        }).catch((error) => {
-            console.error("Upload failed:", error);
+
+    const handleSubmit = () => {
+        const submittedData = JSON.stringify(formData, null, 2);
+        // alert('Form Submitting', submittedData);
+
+        setFormData({
+            name: '',
+            address: '',
+            contact: '',
+            website: '',
+            about: '',
         });
-    }
+
+        onAddNewBusiness();
+    };
+
+    const onAddNewBusiness = async () => {
+        try {
+            console.log("Submitting");
+            const fileName = Date.now().toString() + ".jpg";
+            const response = await fetch(image);
+            const blob = await response.blob();
+
+            const imageRef = ref(storage, `/business-app/${fileName}`);
+
+            await uploadBytes(imageRef, blob);
+            console.log("File uploaded successfully");
+
+            const downloadUrl = await getDownloadURL(imageRef);
+            console.log("File available at", downloadUrl);
+            ToastAndroid.show("Added successfully",ToastAndroid.LONG,ToastAndroid.CENTER)
+
+            await saveBusinessDetails(downloadUrl);
+            setImage(null);
+        } catch (error) {
+            console.error("Upload failed:", error);
+        }
+    };
+
+    const saveBusinessDetails = async (downloadUrl) => {
+        try {
+            const newBusinessDocRef = doc(collection(db, "Bussiness"));
+            await setDoc(newBusinessDocRef, {
+                ...formData,
+                category: category,
+                imageUrl: downloadUrl,
+                userEmail:user?.primaryEmailAddress?.emailAddress
+                 
+            });
+        } catch (error) {
+            console.error("Error saving business details:", error);
+        }
+    };
 
     return (
-        <KeyboardAvoidingView behavior='padding'style={[styles.border,styles.container1]} keyboardVerticalOffset={Platform.OS=='ios'?100:0}>
-        <View>
-            <View style={{
-                padding: 20,
-                paddingTop: 5
-            }}>
-                <Text style={{
-                    fontWeight: "bold",
-                    fontSize: 20
-                }}>Add new Items</Text>
-                <Text>Fill all details to Add items</Text>
-                <TouchableOpacity onPress={() => onImagePick()} style={{
-                    borderColor: Colors.WHITE,
-                    width: "100%"
+        <KeyboardAvoidingView behavior='padding' style={[styles.border, styles.container1]} keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
+            <View>
+                <View style={{ padding: 20, paddingTop: 5 }}>
+                    <Text style={{ fontWeight: "bold", fontSize: 20 }}>Add new Items</Text>
+                    <Text>Fill all details to Add items</Text>
+                    <TouchableOpacity onPress={() => onImagePick()} style={{ borderColor: Colors.WHITE, width: "100%" }}>
+                        {
+                            !image ? <Image source={require("./../../assets/images/upload.png")}
+                                style={styles.imageStyle} /> : <Image source={{ uri: image }}
+                                    style={[styles.imageStyle, styles.imagePicked]} />
+                        }
+                    </TouchableOpacity>
 
-                    // alignItems: 'center',
-                    // justifyContent: 'center',
-
-
-
-                }}>
-                    {
-                        !image ? <Image source={require("./../../assets/images/upload.png")}
-                            style={{
-                                height: 150,
-                                width: 150,
-                                borderRadius: 10,
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.8,
-                                shadowRadius: 3,
-                                elevation: 5,
-                                // backgroundColor: Colors.WHITE,
-                                // borderWidth: 2,
-                                // borderColor: "black"
-                            }} /> : <Image source={{ uri: image }}
-                                style={{
-                                    height: 150,
-                                    width: 150,
-                                    borderRadius: 10,
-                                    borderWidth: 2,
-                                    borderColor: "black",
-                                    resizeMode: "cover",
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.8,
-                                    shadowRadius: 3,
-                                    elevation: 5,
-                                    // backgroundColor: Colors.WHITE,
-                                }} />
-                    }
-                </TouchableOpacity>
-                
                     <TextInput placeholder='name'
                         value={formData.name}
                         onChangeText={(value) => handleInputChange('name', value)}
-                        style={{
-                            padding: 10,
-                            fontFamily: 'bold',
-                            borderWidth: 1,
-                            fontSize: 16,
-                            borderColor: Colors.PRIMARY,
-                            borderRadius: 10,
-                            marginTop: 5
-                        }} />
+                        style={styles.input} />
                     <TextInput placeholder='address'
                         value={formData.address}
                         onChangeText={(value) => handleInputChange('address', value)}
-                        style={{
-                            padding: 10,
-                            fontFamily: 'Outfit-Bold',
-                            borderWidth: 1,
-                            fontSize: 16,
-                            borderColor: Colors.PRIMARY,
-                            borderRadius: 10,
-                            marginTop: 5
-                        }} />
+                        style={styles.input} />
                     <TextInput placeholder='contact'
                         value={formData.contact}
                         keyboardType='phone-pad'
                         onChangeText={(value) => handleInputChange('contact', value)}
-                        style={{
-                            padding: 10,
-                            fontFamily: 'Outfit-Bold',
-                            borderWidth: 1,
-                            fontSize: 16,
-                            borderColor: Colors.PRIMARY,
-                            borderRadius: 10,
-                            marginTop: 5
-                        }} />
+                        style={styles.input} />
                     <TextInput placeholder='website'
                         value={formData.website}
                         onChangeText={(value) => handleInputChange('website', value)}
-                        style={{
-                            padding: 10,
-                            fontFamily: 'Outfit-Bold',
-                            borderWidth: 1,
-                            fontSize: 16,
-                            borderColor: Colors.PRIMARY,
-                            borderRadius: 10,
-                            marginTop: 5
-                        }} />
+                        style={styles.input} />
                     <TextInput placeholder='about'
                         value={formData.about}
                         onChangeText={(value) => handleInputChange('about', value)}
                         multiline
                         numberOfLines={3}
-                        style={{
-                            padding: 10,
-                            fontFamily: 'Outfit-Bold',
-                            borderWidth: 1,
-                            fontSize: 16,
-                            borderColor: Colors.PRIMARY,
-                            borderRadius: 10,
-                            marginTop: 5
-                        }} />
+                        style={styles.input} />
 
-                    <View style={{
-                        // padding: 2,
-                        // fontFamily: 'Outfit-Bold',
-                        // borderWidth: 1,
-                        // fontSize: ,
-                        borderColor: Colors.PRIMARY,
-                        borderRadius: 10,
-                        marginTop: 5,
-                        // gap:10
-
-                    }}>
-                        <View   style={{
-                                borderWidth:1,
-                                borderColor:Colors.PRIMARY,
-                                borderRadius:10
-                            }}>
-                        <RNPickerSelect
-                            onValueChange={(value) => console.log(value)}
-                            items={categoryList}
-                          
-                        />
+                    <View style={styles.pickerContainer}>
+                        <View style={styles.picker}>
+                            <RNPickerSelect
+                                onValueChange={(value) => setCategory(value)}
+                                items={categoryList}
+                            />
                         </View>
-                       
 
                         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                             <Text style={styles.buttonText}>Submit</Text>
                         </TouchableOpacity>
                     </View>
-                
+                </View>
             </View>
-
-        </View>
         </KeyboardAvoidingView>
-    )
+    );
 }
+
 const styles = StyleSheet.create({
     button: {
         backgroundColor: 'blue',
         padding: 10,
         borderRadius: 5,
         alignItems: 'center',
-        
         marginTop: 20
     },
     buttonText: {
         color: 'white',
         fontSize: 18,
     },
-    border:{
+    border: {
         borderWidth: 2,
-       borderColor: 'green',
-       borderStyle: 'solid',
-       borderRadius:10,
-       marginBottom:10
-     },
-     container1: {
-        // flex: 1,
+        borderColor: 'green',
+        borderStyle: 'solid',
+        borderRadius: 10,
+        marginBottom: 10
+    },
+    container1: {
         padding: 20,
-        // paddingBottom: 10,
         backgroundColor: '#fff',
         justifyContent: 'center',
-        
-      },
-
-})
+    },
+    imageStyle: {
+        height: 150,
+        width: 150,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 3,
+        elevation: 5,
+    },
+    imagePicked: {
+        borderWidth: 2,
+        borderColor: "black",
+        resizeMode: "cover",
+    },
+    input: {
+        padding: 10,
+        fontFamily: 'bold',
+        borderWidth: 1,
+        fontSize: 16,
+        borderColor: Colors.PRIMARY,
+        borderRadius: 10,
+        marginTop: 5
+    },
+    pickerContainer: {
+        borderColor: Colors.PRIMARY,
+        borderRadius: 10,
+        marginTop: 5,
+    },
+    picker: {
+        borderWidth: 1,
+        borderColor: Colors.PRIMARY,
+        borderRadius: 10
+    },
+});

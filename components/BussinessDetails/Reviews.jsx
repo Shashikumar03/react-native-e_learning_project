@@ -46,7 +46,7 @@ export default function Reviews({ bussiness }) {
             <Text style={styles.title}>Reviews</Text>
             <View>
                 {
-                    bussiness?.reviews.map((item, index) => (
+                    bussiness?.reviews?.map((item, index) => (
                         <View key={index} style={styles.reviewContainer}>
                             <View>
                                 <Image source={{ uri: item.userImage }}

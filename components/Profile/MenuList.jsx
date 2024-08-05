@@ -1,9 +1,11 @@
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Share } from 'react-native';
 import React from 'react';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@clerk/clerk-expo';
 
 export default function MenuList() {
     const router=useRouter()
+     const {signOut}=useAuth();
 
     const menuList = [
         {
@@ -14,24 +16,33 @@ export default function MenuList() {
         },
         {
             id: 2,
-            name: "chat",
+            name: "My bussiness ",
             icon: require("./../../assets/images/chat.png"),
-            path:""
+            path:"/bussiness/my-bussiness"
         },
         {
             id: 3,
             name: "Share",
             icon: require("./../../assets/images/send.png"),
-            path:""
+            path:"share"
         },
         {
             id: 4,
             name: "logout",
             icon: require("./../../assets/images/logout.png"),
-            path:''
+            path:'logout'
         },
     ];
     const onMenuPress=(item)=>{
+        if(item?.path=='logout'){
+            signOut()
+            return ;
+        }else if(item?.path=='share'){
+            Share.share({
+                message:"download the app from playstore"
+            })
+            return;
+        }
         router.push(item?.path)
 
     }

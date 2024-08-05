@@ -31,7 +31,7 @@ export default function PopularBussiness() {
             setLoading(false); // Ensure loading is set to false even if there's an error
         }
     };
-
+    // console.log(bussinessList)
     return (
         <View>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.PRIMARY }}>Popular Bussiness</Text>
