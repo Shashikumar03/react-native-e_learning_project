@@ -41,7 +41,7 @@ export default function AddBussiness() {
 
     const onImagePick = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
@@ -215,7 +215,6 @@ const styles = StyleSheet.create({
     },
     input: {
         padding: 10,
-        fontFamily: 'bold',
         borderWidth: 1,
         fontSize: 16,
         borderColor: Colors.PRIMARY,
